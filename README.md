@@ -7,6 +7,15 @@
 - [x] Proper error handling with error messages to understand issues with ease.
 - [x] Proper validations implemented ensure data integrity.
 
+### **`Technologies leveraged`**
+
+- Node.js
+- Express.js
+- MySQL
+- Docker
+- Sequelize ORM
+- Postman
+
 <br>
 
 # Models
