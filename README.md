@@ -1,30 +1,106 @@
-# Invoice-App-Backend APIs
+# Employee Management CRUD APIs
 
 ### **`Features`**
 
-- [x] Indexed fields for faster access on frequently required fields.
-- [x] Optimized searches by Aggregate queries for better performance, flexibility and making it easy to understand by anyone due to pipeline processing nature of it.
-- [x] Edge Case Handling for Search Requirements.
-- [x] Proper validations at schema level to ensure data integrity.
-- [x] Proper error messages to understand issues with ease.
-- [x] Docker-compose for smooth deployments when required.
+- [x] Indexed employees names by FullText Index for optimized and fast searches by name.
+- [x] Paginated results with skip and limit.
+- [x] Proper error handling with error messages to understand issues with ease.
+- [x] Proper validations implemented ensure data integrity.
 
-## `Account API`
+<br>
 
-## **Create Account**
+# Models
 
-> **POST&nbsp;&nbsp;&nbsp;**`http://localhost:3000/api/createaccount`
+## Employee Model
+
+The `Employee` model represents an employee in the system.
+
+## Table Schema
+
+The `employees` table has the following columns:
+
+- `id` (UUID) - Primary key identifier for the employee.
+- `firstName` (STRING) - The first name of the employee.
+- `lastName` (STRING) - The last name of the employee.
+- `email` (STRING) - The email address of the employee.
+- `createdAt` (DATE) - The timestamp of when the employee record was created.
+- `updatedAt` (DATE) - The timestamp of when the employee record was last updated.
+
+## Indexes
+
+The `employees` table has the following indexes:
+
+- `email` (UNIQUE) - Ensures uniqueness of email addresses in the table.
+- `first_name_last_name_idx` (FULLTEXT) - Allows full-text search on the `first_name` and `last_name` columns.
+
+## Associations
+
+The `Employee` model has a one-to-one association with the `Metadata` model.
+
+- Relationship: One Employee has One Metadata.
+- Foreign Key: `employeeId` in the `Metadata` table references the `id` column in the `employees` table.
+- Deletion Behavior: When an Employee is deleted, the associated Metadata record is also deleted (CASCADE).
+
+<br>
+
+## Metadata Model
+
+The `Metadata` model represents additional information and details about an employee.
+
+## Schema
+
+| Column Name                           | Data Type | Validation                                                               |
+| ------------------------------------- | --------- | ------------------------------------------------------------------------ |
+| age                                   | INTEGER   | Required, must be between 18 and 80                                      |
+| jobTitle                              | STRING    | Required                                                                 |
+| phoneNumber                           | STRING    | Required, valid phone number                                             |
+| secondaryEmergencyContactPhoneNumber  | STRING    | Required, valid phone number                                             |
+| address                               | STRING    | Required                                                                 |
+| city                                  | STRING    | Required                                                                 |
+| state                                 | STRING    | Required                                                                 |
+| primaryEmergencyContact               | STRING    | Required                                                                 |
+| primaryEmergencyContactPhoneNumber    | STRING    | Required, valid phone number                                             |
+| primaryEmergencyContactRelationship   | STRING    | Required                                                                 |
+| secondaryEmergencyContact             | STRING    | Required                                                                 |
+| secondaryEmergencyContactPhoneNumber  | STRING    | Required, valid phone number                                             |
+| secondaryEmergencyContactRelationship | STRING    | Required                                                                 |
+| createdAt                             | DATE      | Automatically generated, represents the timestamp of record creation     |
+| updatedAt                             | DATE      | Automatically generated, represents the timestamp of record modification |
+
+## Associations
+
+The `Metadata` model has a one-to-one association with the `Employee` model and it `BELONGS TO` Employee table.
+
+- Relationship: One Employee has One Metadata.
+- Foreign Key: `employeeId` in the `Metadata` table references the `id` column in the `employees` table.
+- Deletion Behavior: When an Employee is deleted, the associated Metadata record is also deleted (CASCADE).
+
+# `Employee APIs`
+
+## **Create Employee**
+
+> **POST&nbsp;&nbsp;&nbsp;**`/api/v1/employee/new`
 
 `Request Body`
 
 ```json
 {
-  "name": "John Doe",
-  "balances": [
-    { "year": "2022-23", "balance": 5000 },
-    { "year": "2023-24", "balance": 7000 },
-    { "year": "2024-25", "balance": 9000 }
-  ]
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "johndoe@example.com",
+  "age": 24,
+  "employeeFullName": "John Doe",
+  "jobTitle": "Software Engineer",
+  "phoneNumber": "0000000000",
+  "address": "123 Main St",
+  "city": "New York",
+  "state": "NY",
+  "primaryEmergencyContact": "Jane Doe",
+  "primaryEmergencyContactPhoneNumber": "1111111111",
+  "primaryEmergencyContactRelationship": "Spouse",
+  "secondaryEmergencyContact": "John Doe",
+  "secondaryEmergencyContactPhoneNumber": "2222222222",
+  "secondaryEmergencyContactRelationship": "Sibling"
 }
 ```
 
@@ -32,248 +108,219 @@
 
 ```json
 {
-  "account": {
-    "name": "Callisto Protocol",
-    "balances": [
-      {
-        "year": "2022-23",
-        "balance": 5000
-      },
-      {
-        "year": "2023-24",
-        "balance": 7000
-      },
-      {
-        "year": "2024-25",
-        "balance": 9000
-      }
-    ],
-    "_id": "6417edd45322c80a8e92654d",
-    "__v": 0
+  "success": true,
+  "data": {
+    "id": "20473cd7-475b-4382-8d8d-87b91aaf9722",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@example.com"
   }
 }
 ```
 
-User needs to provide name and balances of three years as specified in assignment.
-
 ### **`Validations`**
 
-- [x] Must provide balances from 2022 till 2025.
+- [x] Email must be unique.
 
 `When Omitted:`
 
 ```json
 {
-  "error": [
-    "You should provide three financial year balances from 2022 i.e 2022-23, 2023-24, 2024-25."
-  ]
+  "success": false,
+  "error": "Email already exists"
 }
 ```
 
 - [x] All fields are required.
 
-`All validations are done in schema in /model/Account.js file`
-
-<br>
-<hr>
-<br>
-
-# `Invoice APIs`
-
-# **Create Invoice**
-
-> **POST&nbsp;&nbsp;&nbsp;**`http://localhost:3000/api/createinvoice`
-
-`Request Body`
-
-```json
-{
-  "date": "2023-03-20",
-  "customerId": "6416dbba64da1f4387d257e9",
-  "accountArray": [
-    {
-      "accountId": "6416d9052d909fb650d2b596",
-      "amount": 100
-    },
-    {
-      "accountId": "6416dbba64da1f4387d257e9",
-      "amount": 100
-    }
-  ],
-  "totalAmount": 200,
-  "invoiceNumber": "INV-2023-06",
-  "year": "2023-24"
-}
-```
-
-`Response Json`
-
-```json
-{
-  "invoice": {
-    "date": "2022-03-20T00:00:00.000Z",
-    "customerId": "6417f20b37d02e3f0b2d4c2a",
-    "accountArray": [
-      {
-        "accountId": "6417f1ff37d02e3f0b2d4c28",
-        "amount": 100
-      },
-      {
-        "accountId": "6417f20b37d02e3f0b2d4c2a",
-        "amount": 100
-      }
-    ],
-    "totalAmount": 200,
-    "invoiceNumber": "INV-2023-02",
-    "year": "2023-24",
-    "_id": "6417f34e37d02e3f0b2d4c39",
-    "createdAt": "2023-03-20T05:46:54.072Z",
-    "updatedAt": "2023-03-20T05:46:54.072Z",
-    "__v": 0
-  }
-}
-```
+`All validations are done in model in /model/Employee.js file`
 
 <br>
 
-### **`Validations`**
+# **Get Employees**
 
-- [x] All fields are compulsory
+> **GET&nbsp;&nbsp;&nbsp;**`/api/v1/employee?skip=0&lim=10`
 
-- [x] Total of amount in AccountArray should be equal to Total Amount.
-
-`When Sum Doesn't Match:`
-
-```json
-{
-  "error": [
-    "Total of amount in accountArray should be equal to Total Amount Provided."
-  ]
-}
-```
-
-- [x] Account array should have at least one object.
-
-`When No Objects Is Passed In Account Array:`
-
-```json
-{
-  "error": ["Account array should have at least one data."]
-}
-```
-
-- [x] All accountId should be present in DB.
-
-`When Customer ID Doenst Exist:`
-
-```json
-{
-  "error": ["Specified customer does not exist. (Customer ID not found)"]
-}
-```
-
-`When Account ID in Account Array Doenst Exist:`
-
-```json
-{
-  "error": [
-    "Account ID specified in account array does not exist. (Account ID not found)"
-  ]
-}
-```
-
-- [x] Same invoice number should not be already present for the same year.
-
-`When same number invoice exists for same year:`
-
-```json
-{
-  "error": ["Invoice number already exists for the same year."]
-}
-```
-
-- [x] After saving entry, the amount in all accounts in accountarray should be incremented with the respective amount for the concerned year for the account id provided.
-
-`All validations are done in schema in /model/Invoice.js file`
-
-<br>
-<hr>
-<br>
-
-# **List Invoices**
-
-> **POST&nbsp;&nbsp;&nbsp;**`http://localhost:3000/api/invoicelist`
-
-### **`Features`**
-
-- [x] Indexed User Names, Invoice Numbers & Amounts for optimized and fast searches
-- [x] Not passing skip defaults to 0
-- [x] Not passing limit defaults to 10
-- [x] Not passing search, returns all invoices
-- [x] Populated customer id with names on response for smoother integration
-
-`Request Body`
-
-| Field  | Type    | Required | Description                 |
-| ------ | ------- | -------- | --------------------------- |
-| skip   | integer | Yes      | Skip results for pagination |
-| limit  | integer | Yes      | Limit result amount         |
-| search | string  | Yes      | Search Field                |
+`Request Query Params (URL Params)`
 
 ```json
 {
   "skip": 0,
-  "limit": 10,
-  "search": "Ak"
+  "lim": 10
 }
 ```
 
 `Response Json`
 
 ```json
-[
-  {
-    "_id": "64181f4dfd0b8ae43f6d181c",
-    "customerId": "64181efffd0b8ae43f6d1804",
-    "createdAt": "createdAt",
-    "date": "2022-03-20T00:00:00.000Z",
-    "accountArray": [
-      {
-        "accountId": {
-          "_id": "64181f0dfd0b8ae43f6d1806",
-          "name": "Akash"
-        },
-        "amount": 300
-      },
-      {
-        "accountId": {
-          "_id": "64181f0dfd0b8ae43f6d1806",
-          "name": "Akash"
-        },
-        "amount": 300
-      }
-    ],
-    "invoiceNumber": "INV-2023-03",
-    "totalAmount": 600,
-    "year": "2023-24"
-  }
-]
+{
+  "success": true,
+  "data": [
+    {
+      "id": "20473cd7-475b-4382-8d8d-87b91aaf9722",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "johndoe@example.com"
+    },
+    {
+      "id": "9bdb63b7-27d8-425b-81ca-bbe1366c81e7",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "janedoe@example.com"
+    }
+  ]
+}
 ```
 
-### **`Validations`**
+<br>
 
-- [x] Searches By Invoice Number
+### **`Measures`**
 
-- [x] Case insesitive fuzzy invoice search by user's names belonging to IDs in Account Array.
+- [x] If no skip and limits are provided, it will return all the employees.
 
-**_For Eg: If Customer's Name is John, Searching Joh Will also return the invoice, this is fuzzy search implementation.
-The searched field can be subset of user's name too._**
+<br>
 
-- [x] Search by amount of invoice (totalAmount field).
+# **Get Employee By Id**
 
-  - [x] Partially Matched Search By Both Amount in Account Array & Total Amount
-  - [x] Searching 200 also returns invocies with 2000, 20001.
-  - [x] Searching 200.00 matches 200.
-  - [x] Searching by fractions is possible too like 200.50. (Covered Edge Case Created For Matching 200.00 with 200)
+> **GET&nbsp;&nbsp;&nbsp;**`/api/v1/employee/:id`
+
+`Example Request URL`
+
+> `/api/v1/employee/20473cd7-475b-4382-8d8d-87b91aaf9722`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "20473cd7-475b-4382-8d8d-87b91aaf9722",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@example.com",
+    "Metadatum": {
+      "id": 1,
+      "age": 0,
+      "jobTitle": "Software Engineer",
+      "phoneNumber": "0000000000",
+      "address": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "primaryEmergencyContact": "Jane Doe",
+      "primaryEmergencyContactPhoneNumber": "1111111111",
+      "primaryEmergencyContactRelationship": "Spouse",
+      "secondaryEmergencyContact": "John Doe",
+      "secondaryEmergencyContactPhoneNumber": "2222222222",
+      "secondaryEmergencyContactRelationship": "Sibling",
+      "createdAt": "2023-05-31T14:02:31.000Z",
+      "updatedAt": "2023-05-31T14:02:31.000Z",
+      "employeeId": "20473cd7-475b-4382-8d8d-87b91aaf9722"
+    }
+  }
+}
+```
+
+<br>
+
+# **Search Employees By Name**
+
+> **GET&nbsp;&nbsp;&nbsp;**`/api/v1/employee/search`
+
+`Request Body`
+
+```json
+{
+  "name": "Jane"
+}
+```
+
+`Response Json`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "9bdb63b7-27d8-425b-81ca-bbe1366c81e7",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "janedoe@example.com"
+    }
+  ]
+}
+```
+
+### **`Features`**
+
+- [x] Fulltext index search on first name and last name resulting in ultra-fast response time.
+- [x] Search is case-insensitive.
+- [x] Search is done on both first name and last name or even fullname.
+
+<br>
+
+# **Update Employee**
+
+> **PATCH&nbsp;&nbsp;&nbsp;**`/api/v1/employee/:id`
+
+`Example Request URL`
+`/api/v1/employee/20473cd7-475b-4382-8d8d-87b91aaf9722`
+
+`Request Body`
+
+```json
+{
+  "firstName": "John"
+}
+```
+
+`Response Json`
+
+```json
+{
+  "success": true,
+  "message": "Employee updated successfully"
+}
+```
+
+<br>
+**Update Employee Metadata**
+
+> **PATCH&nbsp;&nbsp;&nbsp;**`/api/v1/employee/:id`
+
+`Example Request URL`
+`/api/v1/employee/metadata/20473cd7-475b-4382-8d8d-87b91aaf9722`
+
+`Request Body`
+
+```json
+{
+  "age": 27
+}
+```
+
+`Success Response Json`
+
+```json
+{
+  "success": true,
+  "message": "Employee updated successfully"
+}
+```
+
+<br>
+
+**Delete Employee**
+
+> **DELETE&nbsp;&nbsp;&nbsp;**`/api/v1/employee/:id`
+
+`Example Request URL`
+`/api/v1/employee/metadata/20473cd7-475b-4382-8d8d-87b91aaf9722`
+
+`Success Response Json`
+
+```json
+{
+  "success": true,
+  "message": "Employee deleted"
+}
+```
 
 # Thank You

@@ -51,7 +51,7 @@ const getEmployees = async (req, res) => {
     const { skip, lim } = req.query;
 
     // Get employees from the database
-    const employees = await Employee.findOne({
+    const employees = await Employee.findAll({
       offset: skip ? parseInt(skip) : undefined,
       limit: lim ? parseInt(lim) : undefined,
     });
@@ -81,6 +81,28 @@ const getEmployeeById = async (req, res) => {
   }
 };
 
+const searchByName = async (req, res) => {
+  const name = req.body.name;
+  console.log('🚀 ~ file: employee.js:86 ~ searchByName ~ name:', name);
+
+  try {
+    const results = await Employee.findAll({
+      where: Sequelize.literal(
+        `MATCH(first_name, last_name) AGAINST('${name}' IN BOOLEAN MODE)`
+      ),
+    });
+    console.log('🚀 ~ file: employee.js:94 ~ searchByName ~ results:', results);
+
+    // `results` will contain the employees matching the search query
+    res.status(200).json({ success: true, data: results });
+  } catch (error) {
+    console.error('Error searching employees:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to search employees' });
+  }
+};
+
 const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,7 +115,7 @@ const updateEmployee = async (req, res) => {
         .json({ success: false, error: 'Employee not found' });
     }
     await Employee.update(body, {
-      where: { employeeId: id },
+      where: { id },
     });
     res.status(200).json({
       success: true,
@@ -143,7 +165,7 @@ const deleteEmployee = async (req, res) => {
         .json({ success: false, error: 'Employee not found' });
     }
     await employee.destroy();
-    res.status(200).json({ success: true, data: employee });
+    res.status(200).json({ success: true, message: 'Employee deleted' });
   } catch (error) {
     console.error('Error deleting employee:', error);
     res
@@ -156,6 +178,7 @@ module.exports = {
   createEmployee,
   getEmployees,
   getEmployeeById,
+  searchByName,
   updateEmployee,
   deleteEmployee,
   updateEmployeeMetadata,
