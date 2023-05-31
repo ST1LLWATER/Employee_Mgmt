@@ -81,8 +81,82 @@ const getEmployeeById = async (req, res) => {
   }
 };
 
+const updateEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body;
+    const employee = await Employee.findByPk(id);
+
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Employee not found' });
+    }
+    await Employee.update(body, {
+      where: { employeeId: id },
+    });
+    res.status(200).json({
+      success: true,
+      message: 'Employee updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating employee:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to update employee' });
+  }
+};
+
+const updateEmployeeMetadata = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body;
+    const employee = await Employee.findByPk(id);
+
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Employee not found' });
+    }
+    await Metadata.update(body, {
+      where: { employeeId: id },
+    });
+    res.status(200).json({
+      success: true,
+      message: 'Employee data updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating employee:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to update employee' });
+  }
+};
+
+const deleteEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const employee = await Employee.findByPk(id);
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Employee not found' });
+    }
+    await employee.destroy();
+    res.status(200).json({ success: true, data: employee });
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to delete employee' });
+  }
+};
+
 module.exports = {
   createEmployee,
   getEmployees,
   getEmployeeById,
+  updateEmployee,
+  deleteEmployee,
+  updateEmployeeMetadata,
 };
