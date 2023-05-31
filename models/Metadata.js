@@ -4,6 +4,14 @@ const sequelize = require('../config/database'); // Assuming this is the file wh
 const Metadata = sequelize.define(
   'Metadata',
   {
+    age: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        max: 80,
+        min: 18,
+      },
+    },
     jobTitle: {
       type: DataTypes.STRING,
       allowNull: false,
