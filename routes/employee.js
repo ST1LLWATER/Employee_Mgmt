@@ -10,6 +10,12 @@ const {
 } = require('../controllers/employee');
 const router = express();
 
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to the Employee API',
+  });
+});
 router.post('/employee/new', createEmployee);
 router.get('/employee', getEmployees);
 router.get('/employee/search', searchByName);
