@@ -8,6 +8,14 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: employee
-
     volumes:
       - ./data:/var/lib/mysql
+
+  express_server:
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mysql
+    environment:
+      - NODE_ENV=production

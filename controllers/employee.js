@@ -4,13 +4,13 @@ const Metadata = require('../models/Metadata');
 const sequelize = require('../config/database');
 
 const createEmployee = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const body = req.body;
-    const transaction = await sequelize.transaction();
 
     // Create the employee in the database
     const employee = await Employee.create(body, { transaction });
-    const metadata = await Metadata.create(
+    await Metadata.create(
       {
         employeeId: employee.id,
         ...body,
@@ -25,6 +25,7 @@ const createEmployee = async (req, res) => {
 
     res.status(201).json({ success: true, data: employee });
   } catch (error) {
+    await transaction.rollback();
     // Handle duplicate email error
     if (error instanceof Sequelize.UniqueConstraintError) {
       return res
@@ -83,7 +84,6 @@ const getEmployeeById = async (req, res) => {
 
 const searchByName = async (req, res) => {
   const name = req.body.name;
-  console.log('🚀 ~ file: employee.js:86 ~ searchByName ~ name:', name);
 
   try {
     const results = await Employee.findAll({
@@ -91,7 +91,6 @@ const searchByName = async (req, res) => {
         `MATCH(first_name, last_name) AGAINST('${name}' IN BOOLEAN MODE)`
       ),
     });
-    console.log('🚀 ~ file: employee.js:94 ~ searchByName ~ results:', results);
 
     // `results` will contain the employees matching the search query
     res.status(200).json({ success: true, data: results });

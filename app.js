@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('./config/database');
+require('./config/database');
 require('dotenv').config();
 
 const app = express();

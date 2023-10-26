@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); // Assuming this is the file where the Sequelize connection is established
+const Employee = require('./Employee');
 
 const Metadata = sequelize.define(
   'Metadata',
